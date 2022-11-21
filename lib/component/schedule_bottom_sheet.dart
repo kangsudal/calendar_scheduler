@@ -10,28 +10,35 @@ class ScheduleBottomSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     //시스템적인 ui때문에 가려진 화면 사이즈
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-    return Container(
-      color: Colors.white,
-      //키보드가 나왔을때 위로 올라가도록 +bottomInset을 해줘야한다.(1)
-      height: MediaQuery.of(context).size.height / 2 + bottomInset,
-      child: Padding(
-        padding: EdgeInsets.only(
-          bottom: bottomInset,
-          left: 8,
-          right: 8,
-          top: 16,
-        ), //bottom: 키보드 위로 올라가도록(2)
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _Time(),
-            SizedBox(height: 16),
-            _Content(),
-            SizedBox(height: 16),
-            _ColorPicker(),
-            SizedBox(height: 16),
-            _SaveButton(),
-          ],
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).requestFocus(FocusNode()); //빈 여백을 누르면 키보드가 닫힘
+      },
+      child: SafeArea(
+        child: Container(
+          color: Colors.white,
+          //키보드가 나왔을때 위로 올라가도록 +bottomInset을 해줘야한다.(1)
+          height: MediaQuery.of(context).size.height / 2 + bottomInset,
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: bottomInset,
+              left: 8,
+              right: 8,
+              top: 16,
+            ), //bottom: 키보드 위로 올라가도록(2)
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _Time(),
+                SizedBox(height: 16),
+                _Content(),
+                SizedBox(height: 16),
+                _ColorPicker(),
+                SizedBox(height: 16),
+                _SaveButton(),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -45,9 +52,9 @@ class _Time extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: CustomTextField(label: '시작 시간')),
+        Expanded(child: CustomTextField(isTime: true, label: '시작 시간')),
         SizedBox(width: 16),
-        Expanded(child: CustomTextField(label: '마감 시간')),
+        Expanded(child: CustomTextField(isTime: true, label: '마감 시간')),
       ],
     );
   }
@@ -58,8 +65,11 @@ class _Content extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomTextField(
-      label: '내용',
+    return Expanded(
+      child: CustomTextField(
+        label: '내용',
+        isTime: false,
+      ),
     );
   }
 }
