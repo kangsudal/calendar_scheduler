@@ -3,9 +3,15 @@ import 'package:flutter/material.dart';
 
 import 'custom_text_field.dart';
 
-class ScheduleBottomSheet extends StatelessWidget {
+class ScheduleBottomSheet extends StatefulWidget {
   const ScheduleBottomSheet({Key? key}) : super(key: key);
 
+  @override
+  State<ScheduleBottomSheet> createState() => _ScheduleBottomSheetState();
+}
+
+class _ScheduleBottomSheetState extends State<ScheduleBottomSheet> {
+  final GlobalKey<FormState> formKey = GlobalKey();
   @override
   Widget build(BuildContext context) {
     //시스템적인 ui때문에 가려진 화면 사이즈
@@ -26,22 +32,43 @@ class ScheduleBottomSheet extends StatelessWidget {
               right: 8,
               top: 16,
             ), //bottom: 키보드 위로 올라가도록(2)
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _Time(),
-                SizedBox(height: 16),
-                _Content(),
-                SizedBox(height: 16),
-                _ColorPicker(),
-                SizedBox(height: 16),
-                _SaveButton(),
-              ],
+            child: Form(
+              //일괄 관리하려는 TextFormField들의 상위 위젯에 wrap해주면된다
+              key: formKey,
+              autovalidateMode: AutovalidateMode.always,//저장 버튼을 누르지않아도 계속 validation이 된다
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _Time(),
+                  SizedBox(height: 16),
+                  _Content(),
+                  SizedBox(height: 16),
+                  _ColorPicker(),
+                  SizedBox(height: 16),
+                  _SaveButton(
+                    onPressed: onSavePressed,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
+  }
+
+  void onSavePressed() {
+    if (formKey.currentState == null) {
+      //formKey는 생성했는데 Form Widget과 결합을 안했을때
+      return;
+    }
+
+    if (formKey.currentState!.validate()) {
+      //.validate()를 하면 모든 TextFormField의 validator:(String val?){}가 실행된다.
+      //하위 TextFormField에서 모두 null이 return되면 true = 모두 에러가 없으면
+    }else{
+      //모든 TextFormField 중에서 하나라도 String값이 리턴되서 에러가 있다고 인식되면 false가 된다.
+    }
   }
 }
 
@@ -131,7 +158,8 @@ class _ColorPicker extends StatelessWidget {
 }
 
 class _SaveButton extends StatelessWidget {
-  const _SaveButton({Key? key}) : super(key: key);
+  final VoidCallback onPressed;
+  const _SaveButton({Key? key, required this.onPressed}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -140,7 +168,7 @@ class _SaveButton extends StatelessWidget {
         Expanded(
           //Row로 감싼뒤 Expanded하면 전체를 차지하게 해준다.
           child: ElevatedButton(
-            onPressed: () {},
+            onPressed: onPressed,
             child: Text('저장'),
             style: ElevatedButton.styleFrom(primary: primaryColor),
           ),

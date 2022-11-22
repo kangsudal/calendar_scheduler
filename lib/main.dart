@@ -40,8 +40,6 @@ void main() async {
     }
   } //데이터베이스에 데이터가 안들어있으면 CategoryColorsCompanion이라는 entity들을 넣어준다.
 
-  print(await database.getCategoryColors());
-
   runApp(
     MaterialApp(
       theme: ThemeData(fontFamily: 'NotoSans'),

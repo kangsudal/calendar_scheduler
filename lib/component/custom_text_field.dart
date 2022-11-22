@@ -25,9 +25,32 @@ class CustomTextField extends StatelessWidget {
   }
 
   Widget renderTextField() {
-    return TextField(
-      expands: isTime? false: true,//내용 textfield가 expand되기위해
+    return TextFormField(
+      validator: (String? value) {
+        //null이 return되면 에러가없다.
+        //에러가 있으면 에러를 String값으로 리턴해준다.
+        //String값이 return되면 그걸 에러메세지로 간주한다. 그래서 에러메세지를 화면에 보여줄 수 있다.
+        if(value == null || value.isEmpty){
+          return '값을 입력해주세요.';
+        }
+        if(isTime){
+          //시간(시작,마감) TextFormField면
+          int time = int.parse(value);//digitsOnly이니까 int 변경 가능하다
+
+          if(time<0){
+            return '0 이상의 숫자를 입력해주세요.';
+          }else if(time>24){
+            return '24 이하의 숫자를 입력해주세요.';
+          }
+        }else{
+          //내용 TextFormField면
+
+        }
+        return null;
+      },
+      expands: isTime ? false : true, //내용 textfield가 expand되기위해
       maxLines: isTime ? 1 : null, //maxLines를 null로 해줘야 multilline이 작동한다.
+      maxLength: 500,//글자 제한수 500
       cursorColor: Colors.grey,
       decoration: InputDecoration(
         border: InputBorder.none,
