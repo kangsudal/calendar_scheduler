@@ -79,7 +79,7 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet> {
       return;
     }
 
-    if (formKey.currentState!.validate()) {
+    if (formKey.currentState!.validate()) {//currentState!인 이유는 바로 위에 null이 아님을 확인했으니까
       //.validate()를 하면 모든 TextFormField의 validator:(String val?){}가 실행된다.
       //하위 TextFormField에서 모두 null이 return되면 true = 모두 에러가 없으면
       formKey.currentState!.save(); //모든 하위 TextFormField의 onSave:함수가 실행된다.
