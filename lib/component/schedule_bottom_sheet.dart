@@ -1,5 +1,7 @@
 import 'package:calendar_scheduler/const/colors.dart';
+import 'package:calendar_scheduler/database/drift_database.dart';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 
 import 'custom_text_field.dart';
 
@@ -46,7 +48,8 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet> {
                 children: [
                   _Time(
                     endOnSaved: (String? newValue) {
-                      endTime = int.parse(newValue!);//validate를 했기때문에 onSave가 눌리는 시점엔 null값일 수 없기에 !를 붙일 수 있다
+                      endTime = int.parse(
+                          newValue!); //validate를 했기때문에 onSave가 눌리는 시점엔 null값일 수 없기에 !를 붙일 수 있다
                     },
                     startOnSaved: (String? newValue) {
                       startTime = int.parse(newValue!);
@@ -59,7 +62,28 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet> {
                     },
                   ),
                   SizedBox(height: 16),
-                  _ColorPicker(),
+                  FutureBuilder<List<CategoryColor>>(
+                    future: GetIt.I<LocalDatabase>()
+                        .getCategoryColors(), //database 변수를 통해 select쿼리를 실행한다
+                    builder: (context, snapshot) {//select 쿼리를 통해 받아온 데이터를 화면에 보여줄 수 있게 바꾼다
+                      // print(snapshot.data); : [CategoryColor(idColor: 1, hexCode: A175F6), ...]
+                      List<Color> colors = [];
+                      if (snapshot.hasData) {
+                        var categoryColors = snapshot.data!;
+                        var hexCodes = categoryColors.map((categoryColor) {
+                          return 'FF${categoryColor.hexCode}';
+                        }).toList();
+                        colors = hexCodes
+                            .map(
+                              (hexCode) => Color(int.parse(hexCode, radix: 16)),
+                            )
+                            .toList();
+                      }
+                      return _ColorPicker(
+                        colors: colors,
+                      );
+                    },
+                  ),
                   SizedBox(height: 16),
                   _SaveButton(
                     onPressed: onSavePressed,
@@ -79,7 +103,8 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet> {
       return;
     }
 
-    if (formKey.currentState!.validate()) {//currentState!인 이유는 바로 위에 null이 아님을 확인했으니까
+    if (formKey.currentState!.validate()) {
+      //currentState!인 이유는 바로 위에 null이 아님을 확인했으니까
       //.validate()를 하면 모든 TextFormField의 validator:(String val?){}가 실행된다.
       //하위 TextFormField에서 모두 null이 return되면 true = 모두 에러가 없으면
       formKey.currentState!.save(); //모든 하위 TextFormField의 onSave:함수가 실행된다.
@@ -140,7 +165,8 @@ class _Content extends StatelessWidget {
 }
 
 class _ColorPicker extends StatelessWidget {
-  const _ColorPicker({Key? key}) : super(key: key);
+  final List<Color> colors;
+  const _ColorPicker({required this.colors, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -148,38 +174,7 @@ class _ColorPicker extends StatelessWidget {
       //자동으로 줄바꿈
       spacing: 8, //가로 사이간격
       runSpacing: 10, //세로 사이간격
-      children: [
-        renderColor(
-          Color(0xFFA175F6),
-        ),
-        renderColor(
-          Color(0xFF46169E),
-        ),
-        renderColor(
-          Color(0xFF5DA0D9),
-        ),
-        renderColor(
-          Color(0xFF234DA1),
-        ),
-        renderColor(
-          Color(0xFF8CC9A6),
-        ),
-        renderColor(
-          Color(0xFF145742),
-        ),
-        renderColor(
-          Color(0xFFE3D267),
-        ),
-        renderColor(
-          Color(0xFF667619),
-        ),
-        renderColor(
-          Color(0xFFC98CA8),
-        ),
-        renderColor(
-          Color(0xFF821974),
-        ),
-      ],
+      children: colors.map((color) => renderColor(color)).toList(),
     );
   }
 

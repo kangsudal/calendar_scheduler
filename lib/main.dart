@@ -2,6 +2,7 @@ import 'package:calendar_scheduler/database/drift_database.dart'; //LocalDatabas
 import 'package:calendar_scheduler/screen/home_screen.dart';
 import 'package:drift/drift.dart'; //Value()
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 const DEFAULT_COLORS = [
@@ -28,6 +29,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized(); //플러터 프레임워크가 준비가 된상태인지 체크하고 기다림
   await initializeDateFormatting(); //intl 안에 있는 모든 언어를 다 사용할 수 있게됨(날짜관련)
   final database = LocalDatabase(); // 내가 만든 클래스
+  GetIt.I.registerSingleton<LocalDatabase>(database);//Type이 LocalDatabase인 database 객체를 어디에서든 가져올 수 있다.
   final colors =
       await database.getCategoryColors(); //Future이기때문에 await. 선언한 select 쿼리 사용.
   if (colors.isEmpty) {//데이터베이스의(하드드라이브에 저장된) List<CategoryColor> 데이터가 RAM으로 불러올게 없으면
