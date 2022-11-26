@@ -17,6 +17,7 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet> {
   int? startTime;
   int? endTime;
   String? content;
+  int? selectedColorId;
 
   @override
   Widget build(BuildContext context) {
@@ -65,22 +66,22 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet> {
                   FutureBuilder<List<CategoryColor>>(
                     future: GetIt.I<LocalDatabase>()
                         .getCategoryColors(), //database 변수를 통해 select쿼리를 실행한다
-                    builder: (context, snapshot) {//select 쿼리를 통해 받아온 데이터를 화면에 보여줄 수 있게 바꾼다
+                    builder: (context, snapshot) {
+                      //select 쿼리를 통해 받아온 데이터를 화면에 보여줄 수 있게 바꾼다
                       // print(snapshot.data); : [CategoryColor(idColor: 1, hexCode: A175F6), ...]
-                      List<Color> colors = [];
-                      if (snapshot.hasData) {
-                        var categoryColors = snapshot.data!;
-                        var hexCodes = categoryColors.map((categoryColor) {
-                          return 'FF${categoryColor.hexCode}';
-                        }).toList();
-                        colors = hexCodes
-                            .map(
-                              (hexCode) => Color(int.parse(hexCode, radix: 16)),
-                            )
-                            .toList();
+                      if (snapshot.hasData && //데이터가 있고
+                          selectedColorId ==
+                              null && //selectedColorId가 아직 한번도 세팅이 안된 상태이고
+                          snapshot.data!.isNotEmpty) {
+                        //데이터가 최소한 하나이상 있을때
+                        selectedColorId =
+                            snapshot.data![0].id; //데이터에 있는 첫번째 값으로 세팅을 한다.
                       }
+
                       return _ColorPicker(
-                        colors: colors,
+                        colors: snapshot.hasData ? snapshot.data! : [],
+                        selectedColorId:
+                            selectedColorId, //위에 selectedColorId == null이면 값을 세팅해줬기때문에
                       );
                     },
                   ),
@@ -165,8 +166,11 @@ class _Content extends StatelessWidget {
 }
 
 class _ColorPicker extends StatelessWidget {
-  final List<Color> colors;
-  const _ColorPicker({required this.colors, Key? key}) : super(key: key);
+  final List<CategoryColor> colors;
+  final int? selectedColorId;
+  const _ColorPicker(
+      {required this.selectedColorId, required this.colors, Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -174,15 +178,21 @@ class _ColorPicker extends StatelessWidget {
       //자동으로 줄바꿈
       spacing: 8, //가로 사이간격
       runSpacing: 10, //세로 사이간격
-      children: colors.map((color) => renderColor(color)).toList(),
+      children: colors
+          .map((color) => renderColor(
+                color,
+                selectedColorId == color.id,
+              ))
+          .toList(),
     );
   }
 
-  Widget renderColor(Color color) {
+  Widget renderColor(CategoryColor categoryColor, bool isSelected) {
     return Container(
       decoration: BoxDecoration(
-        color: color,
+        color: Color(int.parse('FF${categoryColor.hexCode}', radix: 16)),
         shape: BoxShape.circle,
+        border: isSelected ? Border.all(color: Colors.black, width: 4) : null,
       ),
       width: 32,
       height: 32,
