@@ -82,6 +82,11 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet> {
                         colors: snapshot.hasData ? snapshot.data! : [],
                         selectedColorId:
                             selectedColorId, //위에 selectedColorId == null이면 값을 세팅해줬기때문에
+                        colorIdSetter: (id) {
+                          setState(() {
+                            selectedColorId = id;
+                          });
+                        },
                       );
                     },
                   ),
@@ -165,11 +170,17 @@ class _Content extends StatelessWidget {
   }
 }
 
+typedef ColorIdSetter = void Function(int id);
+
 class _ColorPicker extends StatelessWidget {
   final List<CategoryColor> colors;
   final int? selectedColorId;
+  final ColorIdSetter colorIdSetter;
   const _ColorPicker(
-      {required this.selectedColorId, required this.colors, Key? key})
+      {required this.colorIdSetter,
+      required this.selectedColorId,
+      required this.colors,
+      Key? key})
       : super(key: key);
 
   @override
@@ -179,9 +190,14 @@ class _ColorPicker extends StatelessWidget {
       spacing: 8, //가로 사이간격
       runSpacing: 10, //세로 사이간격
       children: colors
-          .map((color) => renderColor(
-                color,
-                selectedColorId == color.id,
+          .map((color) => GestureDetector(
+                onTap: () {
+                  colorIdSetter(color.id);
+                },
+                child: renderColor(
+                  color,
+                  selectedColorId == color.id,
+                ),
               ))
           .toList(),
     );
