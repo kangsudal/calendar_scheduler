@@ -36,8 +36,12 @@ class LocalDatabase extends _$LocalDatabase {
       into(categoryColors).insert(data);
 
   //SELECT
-  Future<List<CategoryColor>> getCategoryColors() => select(categoryColors).get();
+  Future<List<CategoryColor>> getCategoryColors() =>
+      select(categoryColors).get();
   //한번에 CategoryColor들을 테이블에서 모두 가져오는 기능. categoryColors는 테이블명
+
+  Stream<List<Schedule>> watchSchedules() =>
+      select(schedules).watch(); //업데이트 된 값들을 지속적으로 받을 수 있다.
 
   @override
   // 테이블 구조가 바뀔때마다 버전을 업그레이드해야한다.
