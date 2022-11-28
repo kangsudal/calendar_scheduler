@@ -15,7 +15,11 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  DateTime selectedDay = DateTime.now();
+  DateTime selectedDay = DateTime.utc(
+    DateTime.now().year,
+    DateTime.now().month,
+    DateTime.now().day,
+  );
   DateTime focusedDay = DateTime.now();
 
   @override
@@ -37,7 +41,9 @@ class _HomeScreenState extends State<HomeScreen> {
             SizedBox(
               height: 8,
             ),
-            _ScheduleList(),
+            _ScheduleList(
+              selectedDate: selectedDay,
+            ),
           ],
         ),
       ),
@@ -52,7 +58,9 @@ class _HomeScreenState extends State<HomeScreen> {
           context: context,
           isScrollControlled: true, //BottomSheet 최대 높이 제한 해제(키보드 위로 올라오도록(3))
           builder: (context) {
-            return ScheduleBottomSheet(selectedDay: selectedDay,);
+            return ScheduleBottomSheet(
+              selectedDay: selectedDay,
+            );
           },
         );
       },
@@ -71,7 +79,8 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class _ScheduleList extends StatelessWidget {
-  const _ScheduleList({Key? key}) : super(key: key);
+  final DateTime selectedDate;
+  const _ScheduleList({required this.selectedDate, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -79,27 +88,37 @@ class _ScheduleList extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
         child: StreamBuilder<List<Schedule>>(
-          stream: GetIt.I<LocalDatabase>().watchSchedules(),
-          builder: (context, snapshot) {
-            print(snapshot.data);
-            return ListView.separated(
-              itemCount: 5,
-              itemBuilder: (context, index) {
-                return ScheduleCard(
-                  startTime: 12,
-                  endTime: 14,
-                  content: '프로그래밍 공부하기',
-                  color: Colors.red,
-                );
-              },
-              separatorBuilder: (BuildContext context, int index) {
-                return SizedBox(
-                  height: 8,
-                );
-              },
-            );
-          }
-        ),
+            stream: GetIt.I<LocalDatabase>().watchSchedules(),
+            builder: (context, snapshot) {
+              print('-------------selected data----------------');
+              print(selectedDate);
+              print('-------------original data----------------');
+              print(snapshot.data); //original data
+              List<Schedule> schedules = [];
+              if (snapshot.hasData) {
+                schedules = snapshot.data!.where((element) {
+                  return element.date == selectedDate;
+                }).toList();
+              }
+              print('-------------filtered data----------------');
+              print(schedules); // filtered data
+              return ListView.separated(
+                itemCount: 5,
+                itemBuilder: (context, index) {
+                  return ScheduleCard(
+                    startTime: 12,
+                    endTime: 14,
+                    content: '프로그래밍 공부하기',
+                    color: Colors.red,
+                  );
+                },
+                separatorBuilder: (BuildContext context, int index) {
+                  return SizedBox(
+                    height: 8,
+                  );
+                },
+              );
+            }),
       ),
     );
   }

@@ -121,6 +121,7 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet> {
       print('startTime:$startTime');
       print('endTime:$endTime');
       print('content:$content');
+      print('selectedDay:${widget.selectedDay}');
 
       //Future<int> createSchedule이므로 Future를 붙여준다
       final key = await GetIt.I<LocalDatabase>().createSchedule(
