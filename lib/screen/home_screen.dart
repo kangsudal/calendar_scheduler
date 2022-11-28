@@ -70,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void onDaySelected(DateTime selectedDay, DateTime focusedDay) {
-    print(selectedDay);
+    // print(selectedDay);
     setState(() {
       this.selectedDay = selectedDay;
       this.focusedDay = selectedDay; //보고있는 화면이 선택한 달로 이동
@@ -88,27 +88,25 @@ class _ScheduleList extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
         child: StreamBuilder<List<Schedule>>(
-            stream: GetIt.I<LocalDatabase>().watchSchedules(),
+            stream: GetIt.I<LocalDatabase>().watchSchedules(selectedDate),
             builder: (context, snapshot) {
-              print('-------------selected data----------------');
-              print(selectedDate);
-              print('-------------original data----------------');
-              print(snapshot.data); //original data
-              List<Schedule> schedules = [];
-              if (snapshot.hasData) {
-                schedules = snapshot.data!.where((element) {
-                  return element.date == selectedDate;
-                }).toList();
+              if (!snapshot.hasData) {
+                return CircularProgressIndicator();
               }
-              print('-------------filtered data----------------');
-              print(schedules); // filtered data
+              if (snapshot.hasData && snapshot.data!.isEmpty) {
+                return Center(
+                  child: Text('스케쥴이 없습니다.'),
+                );
+              }
               return ListView.separated(
-                itemCount: 5,
+                itemCount:
+                    snapshot.data!.length, //db에서 가져온 데이터(필터된 schedule들)의 길이만큼
                 itemBuilder: (context, index) {
+                  final schedule = snapshot.data![index];
                   return ScheduleCard(
-                    startTime: 12,
-                    endTime: 14,
-                    content: '프로그래밍 공부하기',
+                    startTime: schedule.startTime,
+                    endTime: schedule.endTime,
+                    content: schedule.content,
                     color: Colors.red,
                   );
                 },

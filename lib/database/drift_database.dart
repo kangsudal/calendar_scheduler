@@ -40,8 +40,20 @@ class LocalDatabase extends _$LocalDatabase {
       select(categoryColors).get();
   //한번에 CategoryColor들을 테이블에서 모두 가져오는 기능. categoryColors는 테이블명
 
-  Stream<List<Schedule>> watchSchedules() =>
-      select(schedules).watch(); //업데이트 된 값들을 지속적으로 받을 수 있다.
+  Stream<List<Schedule>> watchSchedules(DateTime selectedDate) {
+    //업데이트 된 값들을 지속적으로 받을 수 있다.
+
+    final query = select(schedules);
+    query.where((tbl) => tbl.date.equals(selectedDate));
+    //tbl은 select(테이블)의 테이블이다. schedules 테이블에 생성한 column중 date. 테이블 중 날짜(date)가 selectedDate와 같은것을 필터해준다.
+    return query.watch();
+    // return (select(schedules)..where((tbl) => tbl.date.equals(selectedDate))).watch();
+/*  ..의 의미는 void인 where의 결과값을 리턴해주는것이 아니라, select를 return해줘서 .watch를 할 수 있게된다.
+    int num = 3;
+    final resp = num.toString(); //toString()의 결과값이 리턴돼 resp는 '3'이된다.
+    final resp2 = num..toString(); //toString()이 실행은 되지만, num이 리턴되어 3이된다.
+*/
+  }
 
   @override
   // 테이블 구조가 바뀔때마다 버전을 업그레이드해야한다.
