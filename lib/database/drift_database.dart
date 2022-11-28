@@ -26,6 +26,7 @@ class LocalDatabase extends _$LocalDatabase {
 
   //query
   //INSERT
+  //Future<int>인 이유는 생성한 row의 primary key를 반환받기때문
   Future<int> createSchedule(SchedulesCompanion data) =>
       into(schedules).insert(data);
   //into(테이블명).insert(어쩌구Companion 객체)

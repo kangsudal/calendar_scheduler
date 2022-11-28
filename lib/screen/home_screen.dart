@@ -50,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
           context: context,
           isScrollControlled: true, //BottomSheet 최대 높이 제한 해제(키보드 위로 올라오도록(3))
           builder: (context) {
-            return ScheduleBottomSheet();
+            return ScheduleBottomSheet(selectedDay: selectedDay,);
           },
         );
       },
