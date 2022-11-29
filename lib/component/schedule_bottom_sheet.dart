@@ -47,17 +47,17 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet> {
                 child: Text('스케쥴을 불러올 수 없습니다.'),
               );
             }
-            if(snapshot.connectionState != ConnectionState.none && !snapshot.hasData){
+            if (snapshot.connectionState != ConnectionState.none &&
+                !snapshot.hasData) {
               //FutureBuilder가 한번이라도 실행됐고, 로딩중일때
               return CircularProgressIndicator();
             }
-            if(snapshot.hasData&&startTime==null){
+            if (snapshot.hasData && startTime == null) {
               //FutureBuilder가 실행되고 값이 있는데 단 한번도 startTime이 세팅되지 않았을때
               startTime = snapshot.data!.startTime;
               endTime = snapshot.data!.endTime;
               content = snapshot.data!.content;
               selectedColorId = snapshot.data!.colorId;
-
             }
             return SafeArea(
               child: Container(
@@ -149,23 +149,33 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet> {
       //.validate()를 하면 모든 TextFormField의 validator:(String val?){}가 실행된다.
       //하위 TextFormField에서 모두 null이 return되면 true = 모두 에러가 없으면
       formKey.currentState!.save(); //모든 하위 TextFormField의 onSave:함수가 실행된다.
-      print('startTime:$startTime');
-      print('endTime:$endTime');
-      print('content:$content');
-      print('selectedDay:${widget.selectedDay}');
 
-      //Future<int> createSchedule이므로 Future를 붙여준다
-      final key = await GetIt.I<LocalDatabase>().createSchedule(
-        SchedulesCompanion(
-          content: Value(content!),
-          date: Value(widget.selectedDay),
-          startTime: Value(startTime!),
-          endTime: Value(endTime!),
-          colorId: Value(selectedColorId!),
-        ),
-      ); //매개변수로 SchedulesCompanion data를 넘겨주면 테이블에 그 값을 넣어준다.
+      if (widget.scheduleId == null) {
+        //새로 생성해준다 CREATE
+        //Future<int> createSchedule이므로 Future를 붙여준다
+        await GetIt.I<LocalDatabase>().createSchedule(
+          SchedulesCompanion(
+            content: Value(content!),
+            date: Value(widget.selectedDay),
+            startTime: Value(startTime!),
+            endTime: Value(endTime!),
+            colorId: Value(selectedColorId!),
+          ),
+        ); //매개변수로 SchedulesCompanion data를 넘겨주면 테이블에 그 값을 넣어준다.
 
-      print('save 완료: $key');
+      } else {
+        //UPDATE/EDIT
+        await GetIt.I<LocalDatabase>().updateScheduleById(
+            widget.scheduleId!,//if에서 null체크를 해줘서
+            SchedulesCompanion(
+              content: Value(content!),
+              date: Value(widget.selectedDay),
+              startTime: Value(startTime!),
+              endTime: Value(endTime!),
+              colorId: Value(selectedColorId!),
+            ));
+      }
+
       Navigator.of(context).pop();
     } else {
       //모든 TextFormField 중에서 하나라도 String값이 리턴되서 에러가 있다고 인식되면 false가 된다.
