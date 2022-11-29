@@ -39,10 +39,26 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet> {
       child: FutureBuilder<Schedule>(
           future: widget.scheduleId == null
               ? null
-              : GetIt.I<LocalDatabase>()
-                  .getScheduleById(widget.scheduleId!), //id로 Schedule 갖고오는 쿼리 사용
+              : GetIt.I<LocalDatabase>().getScheduleById(
+                  widget.scheduleId!), //id로 Schedule 갖고오는 쿼리 사용
           builder: (context, snapshot) {
-            print(snapshot.data);
+            if (snapshot.hasError) {
+              return Center(
+                child: Text('스케쥴을 불러올 수 없습니다.'),
+              );
+            }
+            if(snapshot.connectionState != ConnectionState.none && !snapshot.hasData){
+              //FutureBuilder가 한번이라도 실행됐고, 로딩중일때
+              return CircularProgressIndicator();
+            }
+            if(snapshot.hasData&&startTime==null){
+              //FutureBuilder가 실행되고 값이 있는데 단 한번도 startTime이 세팅되지 않았을때
+              startTime = snapshot.data!.startTime;
+              endTime = snapshot.data!.endTime;
+              content = snapshot.data!.content;
+              selectedColorId = snapshot.data!.colorId;
+
+            }
             return SafeArea(
               child: Container(
                 color: Colors.white,
