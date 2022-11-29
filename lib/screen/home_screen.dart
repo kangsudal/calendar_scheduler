@@ -38,7 +38,9 @@ class _HomeScreenState extends State<HomeScreen> {
             SizedBox(
               height: 8,
             ),
-            TodayBanner(selectedDay: selectedDay, scheduleCount: 3),
+            TodayBanner(
+              selectedDay: selectedDay,
+            ),
             SizedBox(
               height: 8,
             ),
@@ -109,7 +111,8 @@ class _ScheduleList extends StatelessWidget {
                     endTime: scheduleWithColor.schedule.endTime,
                     content: scheduleWithColor.schedule.content,
                     color: Color(int.parse(
-                        'FF${scheduleWithColor.categoryColor.hexCode}',radix: 16)),
+                        'FF${scheduleWithColor.categoryColor.hexCode}',
+                        radix: 16)),
                   );
                 },
                 separatorBuilder: (BuildContext context, int index) {
