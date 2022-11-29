@@ -41,6 +41,10 @@ class LocalDatabase extends _$LocalDatabase {
       select(categoryColors).get();
   //한번에 CategoryColor들을 테이블에서 모두 가져오는 기능. categoryColors는 테이블명
 
+  Future<int> removeSchedule(int id) =>
+      (delete(schedules)..where((tbl) => tbl.id.equals(id))).go();
+  //외부에서 받은 id와 테블에 있는 id를 비교해서 row가 있으면 삭제를 해준다.
+
   Stream<List<ScheduleWithColor>> watchSchedules(DateTime selectedDate) {
     //Schedule->ScheduleWithColor
     //업데이트 된 값들을 지속적으로 받을 수 있다.
@@ -51,7 +55,11 @@ class LocalDatabase extends _$LocalDatabase {
 
     query.where(schedules.date.equals(
         selectedDate)); //schedules테이블과 categoryColors테이블 중 schedules 테이블. 날짜(date)가 selectedDate와 같은것을 필터해준다.
-    query.orderBy([OrderingTerm.asc(schedules.startTime),],);
+    query.orderBy(
+      [
+        OrderingTerm.asc(schedules.startTime),
+      ],
+    );
     return query.watch().map(
           (rows) => rows
               .map(
