@@ -51,6 +51,7 @@ class LocalDatabase extends _$LocalDatabase {
 
     query.where(schedules.date.equals(
         selectedDate)); //schedules테이블과 categoryColors테이블 중 schedules 테이블. 날짜(date)가 selectedDate와 같은것을 필터해준다.
+    query.orderBy([OrderingTerm.asc(schedules.startTime),],);
     return query.watch().map(
           (rows) => rows
               .map(

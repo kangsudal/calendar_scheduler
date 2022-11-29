@@ -52,7 +52,7 @@ class _Time extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '${startTime.toString().padLeft(2, '0')}.00',
+          '${startTime.toString().padLeft(2, '0')}:00',
           style: textStyle,
         ),
         Text(
