@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:calendar_scheduler/model/category_color.dart';
 import 'package:calendar_scheduler/model/schedule.dart';
+import 'package:calendar_scheduler/model/schedule_with_color.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart'; //getApplicationDocumentsDirectory
@@ -40,14 +41,31 @@ class LocalDatabase extends _$LocalDatabase {
       select(categoryColors).get();
   //한번에 CategoryColor들을 테이블에서 모두 가져오는 기능. categoryColors는 테이블명
 
-  Stream<List<Schedule>> watchSchedules(DateTime selectedDate) {
+  Stream<List<ScheduleWithColor>> watchSchedules(DateTime selectedDate) {
+    //Schedule->ScheduleWithColor
     //업데이트 된 값들을 지속적으로 받을 수 있다.
 
-    final query = select(schedules);
-    query.where((tbl) => tbl.date.equals(selectedDate));
+    final query = select(schedules).join([
+      innerJoin(categoryColors, categoryColors.id.equalsExp(schedules.colorId))
+    ]); //select한 schedules 테이블에 categoryColors테이블을 조인해주겠다. categoryColors.id와 schedules.colorId가 같은것을.
+
+    query.where(schedules.date.equals(
+        selectedDate)); //schedules테이블과 categoryColors테이블 중 schedules 테이블. 날짜(date)가 selectedDate와 같은것을 필터해준다.
+    return query.watch().map(
+          (rows) => rows
+              .map(
+                (row) => ScheduleWithColor(
+                  schedule: row.readTable(schedules),
+                  categoryColor: row.readTable(categoryColors),
+                ),
+              )
+              .toList(),
+        );
+/*    query.where((tbl) => tbl.date.equals(selectedDate));
     //tbl은 select(테이블)의 테이블이다. schedules 테이블에 생성한 column중 date. 테이블 중 날짜(date)가 selectedDate와 같은것을 필터해준다.
     return query.watch();
-    // return (select(schedules)..where((tbl) => tbl.date.equals(selectedDate))).watch();
+    // return (select(schedules)..where((tbl) => tbl.date.equals(selectedDate))).watch(); 와 같다.   
+ */
 /*  ..의 의미는 void인 where의 결과값을 리턴해주는것이 아니라, select를 return해줘서 .watch를 할 수 있게된다.
     int num = 3;
     final resp = num.toString(); //toString()의 결과값이 리턴돼 resp는 '3'이된다.
