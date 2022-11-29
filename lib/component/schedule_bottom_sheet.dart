@@ -1,6 +1,6 @@
 import 'package:calendar_scheduler/const/colors.dart';
 import 'package:calendar_scheduler/database/drift_database.dart';
-import 'package:drift/drift.dart' show Value;//Value라는 클래스만 사용하겠다
+import 'package:drift/drift.dart' show Value; //Value라는 클래스만 사용하겠다
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 
@@ -8,9 +8,13 @@ import 'custom_text_field.dart';
 
 class ScheduleBottomSheet extends StatefulWidget {
   final DateTime selectedDay;
+  final int? scheduleId;//ScheduleCard를 클릭했을때 schedule의 id를 받아오려고
 
-  const ScheduleBottomSheet({required this.selectedDay, Key? key})
-      : super(key: key);
+  const ScheduleBottomSheet({
+    required this.selectedDay,
+    Key? key,
+    this.scheduleId,
+  }) : super(key: key);
 
   @override
   State<ScheduleBottomSheet> createState() => _ScheduleBottomSheetState();
@@ -84,8 +88,7 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet> {
 
                       return _ColorPicker(
                         colors: snapshot.hasData ? snapshot.data! : [],
-                        selectedColorId:
-                            selectedColorId,
+                        selectedColorId: selectedColorId,
                         colorIdSetter: (id) {
                           setState(() {
                             selectedColorId = id;
@@ -125,8 +128,14 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet> {
 
       //Future<int> createSchedule이므로 Future를 붙여준다
       final key = await GetIt.I<LocalDatabase>().createSchedule(
-        SchedulesCompanion(content: Value(content!),date: Value(widget.selectedDay),startTime: Value(startTime!),endTime: Value(endTime!),colorId: Value(selectedColorId!),),
-      );//매개변수로 SchedulesCompanion data를 넘겨주면 테이블에 그 값을 넣어준다.
+        SchedulesCompanion(
+          content: Value(content!),
+          date: Value(widget.selectedDay),
+          startTime: Value(startTime!),
+          endTime: Value(endTime!),
+          colorId: Value(selectedColorId!),
+        ),
+      ); //매개변수로 SchedulesCompanion data를 넘겨주면 테이블에 그 값을 넣어준다.
 
       print('save 완료: $key');
       Navigator.of(context).pop();

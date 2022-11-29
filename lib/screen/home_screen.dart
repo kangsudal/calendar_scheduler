@@ -111,7 +111,10 @@ class _ScheduleList extends StatelessWidget {
                       showModalBottomSheet(
                         context: context,
                         builder: (_) {
-                          return ScheduleBottomSheet(selectedDay: selectedDate);
+                          return ScheduleBottomSheet(
+                            selectedDay: selectedDate,
+                            scheduleId: scheduleWithColor.schedule.id,
+                          );
                         },
                         isScrollControlled: true,
                       );
