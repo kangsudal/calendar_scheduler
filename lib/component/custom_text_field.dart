@@ -4,15 +4,18 @@ import 'package:flutter/services.dart';
 
 class CustomTextField extends StatelessWidget {
   final String label;
+  final String initialValue;
+
   // 시간 - true, 내용 - false
   final bool isTime;
   final FormFieldSetter<String> onSaved;
-  const CustomTextField(
-      {required this.isTime,
-      required this.label,
-      required this.onSaved,
-      Key? key})
-      : super(key: key);
+  const CustomTextField({
+    required this.isTime,
+    required this.label,
+    required this.onSaved,
+    required this.initialValue,
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -58,6 +61,7 @@ class CustomTextField extends StatelessWidget {
       maxLines: isTime ? 1 : null, //maxLines를 null로 해줘야 multilline이 작동한다.
       maxLength: 500, //글자 제한수 500
       cursorColor: Colors.grey,
+      initialValue: initialValue, //외부에서 받아온다.
       decoration: InputDecoration(
         border: InputBorder.none,
         filled: true,

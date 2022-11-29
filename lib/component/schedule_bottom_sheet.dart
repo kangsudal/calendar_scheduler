@@ -1,5 +1,6 @@
 import 'package:calendar_scheduler/const/colors.dart';
 import 'package:calendar_scheduler/database/drift_database.dart';
+import 'package:calendar_scheduler/model/schedule_with_color.dart';
 import 'package:drift/drift.dart' show Value; //Value라는 클래스만 사용하겠다
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -8,7 +9,7 @@ import 'custom_text_field.dart';
 
 class ScheduleBottomSheet extends StatefulWidget {
   final DateTime selectedDay;
-  final int? scheduleId;//ScheduleCard를 클릭했을때 schedule의 id를 받아오려고
+  final int? scheduleId; //ScheduleCard를 클릭했을때 schedule의 id를 받아오려고
 
   const ScheduleBottomSheet({
     required this.selectedDay,
@@ -35,78 +36,89 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet> {
       onTap: () {
         FocusScope.of(context).requestFocus(FocusNode()); //빈 여백을 누르면 키보드가 닫힘
       },
-      child: SafeArea(
-        child: Container(
-          color: Colors.white,
-          //키보드가 나왔을때 위로 올라가도록 +bottomInset을 해줘야한다.(1)
-          height: MediaQuery.of(context).size.height / 2 + bottomInset,
-          child: Padding(
-            padding: EdgeInsets.only(
-              bottom: bottomInset,
-              left: 8,
-              right: 8,
-              top: 16,
-            ), //bottom: 키보드 위로 올라가도록(2)
-            child: Form(
-              //일괄 관리하려는 TextFormField들의 상위 위젯에 wrap해주면된다
-              key: formKey,
-              // autovalidateMode:
-              //     AutovalidateMode.always, //저장 버튼을 누르지않아도 계속 validation이 된다
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _Time(
-                    endOnSaved: (String? newValue) {
-                      endTime = int.parse(
-                          newValue!); //validate를 했기때문에 onSave가 눌리는 시점엔 null값일 수 없기에 !를 붙일 수 있다
-                    },
-                    startOnSaved: (String? newValue) {
-                      startTime = int.parse(newValue!);
-                    },
-                  ),
-                  SizedBox(height: 16),
-                  _Content(
-                    onSaved: (String? newValue) {
-                      content = newValue;
-                    },
-                  ),
-                  SizedBox(height: 16),
-                  FutureBuilder<List<CategoryColor>>(
-                    future: GetIt.I<LocalDatabase>()
-                        .getCategoryColors(), //database 변수를 통해 select쿼리를 실행한다
-                    builder: (context, snapshot) {
-                      //select 쿼리를 통해 받아온 데이터를 화면에 보여줄 수 있게 바꾼다
-                      // print(snapshot.data); : [CategoryColor(idColor: 1, hexCode: A175F6), ...]
-                      if (snapshot.hasData && //데이터가 있고
-                          selectedColorId ==
-                              null && //selectedColorId가 아직 한번도 세팅이 안된 상태이고
-                          snapshot.data!.isNotEmpty) {
-                        //데이터가 최소한 하나이상 있을때
-                        selectedColorId =
-                            snapshot.data![0].id; //데이터에 있는 첫번째 값으로 세팅을 한다.
-                      }
+      child: FutureBuilder<Schedule>(
+          future: widget.scheduleId == null
+              ? null
+              : GetIt.I<LocalDatabase>()
+                  .getScheduleById(widget.scheduleId!), //id로 Schedule 갖고오는 쿼리 사용
+          builder: (context, snapshot) {
+            print(snapshot.data);
+            return SafeArea(
+              child: Container(
+                color: Colors.white,
+                //키보드가 나왔을때 위로 올라가도록 +bottomInset을 해줘야한다.(1)
+                height: MediaQuery.of(context).size.height / 2 + bottomInset,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    bottom: bottomInset,
+                    left: 8,
+                    right: 8,
+                    top: 16,
+                  ), //bottom: 키보드 위로 올라가도록(2)
+                  child: Form(
+                    //일괄 관리하려는 TextFormField들의 상위 위젯에 wrap해주면된다
+                    key: formKey,
+                    // autovalidateMode:
+                    //     AutovalidateMode.always, //저장 버튼을 누르지않아도 계속 validation이 된다
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _Time(
+                          endOnSaved: (String? newValue) {
+                            endTime = int.parse(
+                                newValue!); //validate를 했기때문에 onSave가 눌리는 시점엔 null값일 수 없기에 !를 붙일 수 있다
+                          },
+                          startOnSaved: (String? newValue) {
+                            startTime = int.parse(newValue!);
+                          },
+                          startInitialValue: startTime?.toString() ?? '',
+                          endInitialValue: endTime?.toString() ?? '',
+                        ),
+                        SizedBox(height: 16),
+                        _Content(
+                          onSaved: (String? newValue) {
+                            content = newValue;
+                          },
+                          initialValue: content ?? '',
+                        ),
+                        SizedBox(height: 16),
+                        FutureBuilder<List<CategoryColor>>(
+                          future: GetIt.I<LocalDatabase>()
+                              .getCategoryColors(), //database 변수를 통해 select쿼리를 실행한다
+                          builder: (context, snapshot) {
+                            //select 쿼리를 통해 받아온 데이터를 화면에 보여줄 수 있게 바꾼다
+                            // print(snapshot.data); : [CategoryColor(idColor: 1, hexCode: A175F6), ...]
+                            if (snapshot.hasData && //데이터가 있고
+                                selectedColorId ==
+                                    null && //selectedColorId가 아직 한번도 세팅이 안된 상태이고
+                                snapshot.data!.isNotEmpty) {
+                              //데이터가 최소한 하나이상 있을때
+                              selectedColorId = snapshot
+                                  .data![0].id; //데이터에 있는 첫번째 값으로 세팅을 한다.
+                            }
 
-                      return _ColorPicker(
-                        colors: snapshot.hasData ? snapshot.data! : [],
-                        selectedColorId: selectedColorId,
-                        colorIdSetter: (id) {
-                          setState(() {
-                            selectedColorId = id;
-                          });
-                        },
-                      );
-                    },
+                            return _ColorPicker(
+                              colors: snapshot.hasData ? snapshot.data! : [],
+                              selectedColorId: selectedColorId,
+                              colorIdSetter: (id) {
+                                setState(() {
+                                  selectedColorId = id;
+                                });
+                              },
+                            );
+                          },
+                        ),
+                        SizedBox(height: 16),
+                        _SaveButton(
+                          onPressed: onSavePressed,
+                        ),
+                      ],
+                    ),
                   ),
-                  SizedBox(height: 16),
-                  _SaveButton(
-                    onPressed: onSavePressed,
-                  ),
-                ],
+                ),
               ),
-            ),
-          ),
-        ),
-      ),
+            );
+          }),
     );
   }
 
@@ -148,10 +160,15 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet> {
 class _Time extends StatelessWidget {
   final FormFieldSetter<String> startOnSaved;
   final FormFieldSetter<String> endOnSaved;
+  final String startInitialValue;
+  final String endInitialValue;
+
   const _Time({
     Key? key,
     required this.startOnSaved,
     required this.endOnSaved,
+    required this.startInitialValue,
+    required this.endInitialValue,
   }) : super(key: key);
 
   @override
@@ -163,6 +180,7 @@ class _Time extends StatelessWidget {
           isTime: true,
           label: '시작 시간',
           onSaved: startOnSaved,
+          initialValue: startInitialValue,
         )),
         SizedBox(width: 16),
         Expanded(
@@ -170,6 +188,7 @@ class _Time extends StatelessWidget {
           isTime: true,
           label: '마감 시간',
           onSaved: endOnSaved,
+          initialValue: endInitialValue,
         )),
       ],
     );
@@ -178,7 +197,9 @@ class _Time extends StatelessWidget {
 
 class _Content extends StatelessWidget {
   final FormFieldSetter<String> onSaved;
-  const _Content({required this.onSaved, Key? key}) : super(key: key);
+  final String initialValue;
+  const _Content({required this.onSaved, required this.initialValue, Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -187,6 +208,7 @@ class _Content extends StatelessWidget {
         label: '내용',
         isTime: false,
         onSaved: onSaved,
+        initialValue: initialValue,
       ),
     );
   }
