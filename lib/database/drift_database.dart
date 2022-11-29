@@ -41,6 +41,12 @@ class LocalDatabase extends _$LocalDatabase {
       select(categoryColors).get();
   //한번에 CategoryColor들을 테이블에서 모두 가져오는 기능. categoryColors는 테이블명
 
+  //UPDATE
+  Future<int> updateScheduleById(int id, SchedulesCompanion data) =>
+      (update(schedules)..where((tbl) => tbl.id.equals(id))).write(data);
+  //SchedulesCompanion data는 바꿀 내용. 외부에서 가져온 id와 schedules 테이블 id를 비교해 필터한 row을 업데이트해준다.
+
+  //DELETE
   Future<int> removeSchedule(int id) =>
       (delete(schedules)..where((tbl) => tbl.id.equals(id))).go();
   //외부에서 받은 id와 테블에 있는 id를 비교해서 row가 있으면 삭제를 해준다.
